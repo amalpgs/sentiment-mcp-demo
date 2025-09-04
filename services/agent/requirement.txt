@@ -1,0 +1,5 @@
+boto3
+requests
+prometheus_client
+python-dotenv
+

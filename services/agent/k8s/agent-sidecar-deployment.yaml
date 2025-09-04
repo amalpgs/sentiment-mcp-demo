@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentiment-agent
+  namespace: ai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sentiment-agent
+  template:
+    metadata:
+      labels:
+        app: sentiment-agent
+    spec:
+      containers:
+      - name: agent
+        image: ghcr.io/yourorg/agent:latest
+        env:
+          - name: MCP_TRANSPORT
+            value: "stdio"
+          - name: S3_BUCKET
+            value: "mcp-demo-bucket"
+          - name: AWS_REGION
+            value: "us-east-1"
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        ports:
+          - name: metrics
+            containerPort: 8000
+      - name: mcp-sentiment-tool
+        image: ghcr.io/yourorg/mcp-sentiment-tool:latest
+        args: ["--transport=stdio"]
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        # no network ports exposed; runs as sidecar stdio

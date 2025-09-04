@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: sentiment-agent
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: sentiment-agent
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s

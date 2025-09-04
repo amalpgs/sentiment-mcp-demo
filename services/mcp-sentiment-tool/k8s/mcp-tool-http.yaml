@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-sentiment-tool
+  namespace: ai-tools
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mcp-sentiment-tool
+  template:
+    metadata:
+      labels:
+        app: mcp-sentiment-tool
+    spec:
+      containers:
+      - name: mcp-sentiment-tool
+        image: ghcr.io/yourorg/mcp-sentiment-tool:latest
+        args: ["--transport=http", "--port=8080"]
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            cpu: "150m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-sentiment-tool
+  namespace: ai-tools
+spec:
+  selector:
+    app: mcp-sentiment-tool
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080

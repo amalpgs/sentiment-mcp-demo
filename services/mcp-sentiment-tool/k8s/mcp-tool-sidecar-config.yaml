@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentiment-agent-with-sidecar
+  namespace: ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sentiment-agent-sidecar
+  template:
+    metadata:
+      labels:
+        app: sentiment-agent-sidecar
+    spec:
+      initContainers:
+        - name: init-mcp-pipes
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /mcp-pipes
+              mkfifo /mcp-pipes/stdin
+              mkfifo /mcp-pipes/stdout
+          volumeMounts:
+            - name: mcp-pipes
+              mountPath: /mcp-pipes
+      containers:
+        - name: sentiment-agent
+          image: ghcr.io/yourorg/agent:latest
+          env:
+            - name: MCP_TRANSPORT
+              value: "stdio"
+            - name: PIPE_DIR
+              value: "/mcp-pipes"
+          volumeMounts:
+            - name: mcp-pipes
+              mountPath: /mcp-pipes
+        - name: mcp-sentiment-tool
+          image: ghcr.io/yourorg/mcp-sentiment-tool:latest
+          args:
+            - "--transport=stdio"
+            - "--pipe-dir=/mcp-pipes"
+          volumeMounts:
+            - name: mcp-pipes
+              mountPath: /mcp-pipes
+      volumes:
+        - name: mcp-pipes
+          emptyDir: {}

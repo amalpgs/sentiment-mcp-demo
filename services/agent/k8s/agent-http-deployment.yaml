@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentiment-agent-http
+  namespace: ai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sentiment-agent-http
+  template:
+    metadata:
+      labels:
+        app: sentiment-agent-http
+    spec:
+      containers:
+      - name: agent
+        image: ghcr.io/yourorg/agent:latest
+        env:
+          - name: MCP_TRANSPORT
+            value: "http"
+          - name: MCP_TOOL_URL
+            value: "http://mcp-sentiment-tool.ai-tools.svc.cluster.local"
+          - name: S3_BUCKET
+            value: "mcp-demo-bucket"
+        ports:
+          - name: metrics
+            containerPort: 8000
